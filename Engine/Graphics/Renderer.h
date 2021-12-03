@@ -1,9 +1,8 @@
 #pragma once
 #include "Framework/System.h"
-#include "Texture.h"
-#include "MathTypes.h"
 #include "Math/Transform.h"
-#include "sdl.h"
+#include <sdl.h>
+#include <glad/glad.h>
 #include <string>
 
 namespace MAC {
@@ -18,10 +17,8 @@ namespace MAC {
 		void BeginFrame();
 		void EndFrame();
 
-		friend class Texture;
-
 	private:
-		SDL_Renderer* renderer{ nullptr };
+		SDL_GLContext context;
 		SDL_Window* window{ nullptr };
 	};
 }

@@ -15,7 +15,7 @@ namespace MAC {
 
 		void SetVolume(float volume);
 		float GetVolume();
-	
+
 	private:
 		FMOD::Channel* channel{ nullptr };
 	};

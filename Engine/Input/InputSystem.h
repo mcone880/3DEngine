@@ -31,7 +31,8 @@ namespace MAC {
 		bool IsKeyDown(int id) const { return keyboardState[id]; }
 		bool IsPreviousKeyDown(int id) const { return prevKeyboardState[id]; }
 
-		const glm::vec3& GetMousePosition() const { return mousePosition; }
+		const glm::vec2& GetMousePosition() const { return mousePosition; }
+		const glm::vec2& GetMouseRelative() { return mouseRelative; }
 		bool IsButtonDown(int id) const { return mouseButtonState[id]; }
 		bool IsPreviousButtonDown(int id) const { return prevMouseButtonState[id]; }
 		eKeyState GetButtonState(int id);
@@ -42,7 +43,9 @@ namespace MAC {
 		std::vector<Uint8> prevKeyboardState;
 		int numKeys;
 
-		glm::vec3 mousePosition;
+		glm::vec2 mousePosition;
+		glm::vec2 prevMousePosition;
+		glm::vec2 mouseRelative;
 		std::array<Uint8, 3> mouseButtonState;
 		std::array<Uint8, 3> prevMouseButtonState;
 	};

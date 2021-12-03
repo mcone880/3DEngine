@@ -1,167 +1,114 @@
+#include "Engine.h"
 #include <glad\glad.h>
 #include <sdl.h>
 #include <iostream>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-
-// vertices
-const float vertices[] =
-{
-    -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-     0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-     0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f
-};
-
-// vertex shader
-const char* vertexSource = R"(
-    #version 430 core 
-    layout(location = 0) in vec3 position;
-    layout(location = 1) in vec3 color;
-    out vec3 fs_color;
-    uniform float scale;
-    
-    void main()
-    {
-        fs_color = color;
-        gl_Position = vec4(position * scale, 1.0);
-    }
-)";
-
-// fragment
-const char* fragmentSource = R"(
-    #version 430 core
-    in vec3 fs_color;
-    out vec4 outColor;
-    uniform vec3 tint;
-
-    void main()
-    {
-        outColor = vec4(fs_color, 1.0) * vec4(tint, 1.0f);
-    }
-)";
+#include <glm\vec4.hpp>
+#include <glm\vec3.hpp>
 
 int main(int argc, char** argv)
 {
-    int result = SDL_Init(SDL_INIT_VIDEO);
-    if (result != 0)
-    {
-        SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
-    }
+	// create engine
+	std::unique_ptr<MAC::Engine> engine = std::make_unique<MAC::Engine>();
+	engine->Startup();
+	engine->Get<MAC::Renderer>()->Create("OpenGL", 800, 600);
 
+	// create scene
+	std::unique_ptr<MAC::Scene> scene = std::make_unique<MAC::Scene>();
+	scene->engine = engine.get();
 
+	MAC::SeedRandom(static_cast<unsigned int>(time(nullptr)));
+	MAC::SetFilePath("../resources");
 
-    SDL_Window* window = SDL_CreateWindow("OpenGL", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
-    if (window == nullptr)
-    {
-        SDL_Log("Failed to create window: %s", SDL_GetError());
-    }
+	// create camera
+	{
+		auto actor = CREATE_ENGINE_OBJECT(Actor);
+		actor->name = "camera";
+		actor->transform.position = glm::vec3{ 0, 0, 5 };
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+		{
+			auto component = CREATE_ENGINE_OBJECT(CameraComponent);
+			component->SetPerspective(45.0f, 800.0f / 600.0f, 0.01f, 100.0f);
+			actor->AddComponent(std::move(component));
+		}
+		{
+			auto component = CREATE_ENGINE_OBJECT(FreeCameraController);
+			component->speed = 8;
+			component->sensitivity = 0.1f;
+			actor->AddComponent(std::move(component));
+		}
 
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    SDL_GL_SetSwapInterval(1);
+		scene->AddActor(std::move(actor));
+	}
 
-    SDL_GLContext context = SDL_GL_CreateContext(window);
-    if (!gladLoadGL())
-    {
-        SDL_Log("Failed to create OpenGL context");
-        exit(-1);
-    }
+	// create model
+	{
+		auto actor = CREATE_ENGINE_OBJECT(Actor);
+		actor->name = "model";
+		actor->transform.position = glm::vec3{ 0 };
+		actor->transform.scale = glm::vec3{ 1 };
 
-    // set vertex shader
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexSource, NULL);
-    glCompileShader(vertexShader);
+		auto component = CREATE_ENGINE_OBJECT(ModelComponent);
+		component->model = engine->Get<MAC::ResourceSystem>()->Get<MAC::Model>("models/cube.obj");
+		component->material = engine->Get<MAC::ResourceSystem>()->Get<MAC::Material>("materials/wood.mtl", engine.get());
 
-    GLint status;
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
-    if (status == GL_FALSE)
-    {
-        char buffer[512];
-        glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
-        std::cout << buffer;
-    }
+		actor->AddComponent(std::move(component));
+		scene->AddActor(std::move(actor));
+	}
 
-    // set fragment shader
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-    glCompileShader(fragmentShader);
+	// create light
+	{
+		auto actor = CREATE_ENGINE_OBJECT(Actor);
+		actor->name = "light";
+		actor->transform.position = glm::vec3{ 4,1,4 };
 
-    GLint fragmentStatus;
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fragmentStatus);
-    if (fragmentStatus == GL_FALSE)
-    {
-        char buffer[512];
-        glGetShaderInfoLog(fragmentShader, 512, NULL, buffer);
-        std::cout << buffer;
-    }
+		auto component = CREATE_ENGINE_OBJECT(LightComponent);
+		component->ambient = glm::vec3{ 0.2f };
+		component->diffuse = glm::vec3{ 1 };
+		component->specular = glm::vec3{ 1 };
 
-    // create shader program
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
+		actor->AddComponent(std::move(component));
+		scene->AddActor(std::move(actor));
+	}
 
-    glLinkProgram(shaderProgram);
-    glUseProgram(shaderProgram);
+	glm::vec3 translate{ 0.0f };
+	float angle = 0;
 
-    //Vertex Array
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+	bool quit = false;
+	while (!quit)
+	{
+		SDL_Event event;
+		SDL_PollEvent(&event);
 
-    //Create Vertex Buffer
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
+		switch (event.type)
+		{
+		case SDL_QUIT:
+			quit = true;
+			break;
+		case SDL_KEYDOWN:
+			if (event.key.keysym.sym == SDLK_ESCAPE)
+			{
+				quit = true;
+			}
+		}
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		SDL_PumpEvents();
+		engine->Update();
+		scene->Update(engine->time.deltaTime);
 
-    //Position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLubyte*)NULL);
-    glEnableVertexAttribArray(0);
-    //Color
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLubyte*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    //Uniform
-    GLuint location = glGetUniformLocation(shaderProgram, "scale");
-    float time = 0;
+		// update actor
+		auto actor = scene->FindActor("model");
+		if (actor != nullptr)
+		{
+			//actor->transform.position += direction * 5.0f * engine->time.deltaTime;
+			actor->transform.rotation.y += engine->time.deltaTime;
+		}
 
-    GLuint tintLocation = glGetUniformLocation(shaderProgram, "tint");
-    glm::vec3 tint{ 1.0f, 0.5f, 0.5f };
+		engine->Get<MAC::Renderer>()->BeginFrame();
 
-    bool quit = false;
-    while (!quit)
-    {
-        SDL_Event event;
-        SDL_PollEvent(&event);
+		scene->Draw(nullptr);
 
-        switch (event.type)
-        {
-        case SDL_QUIT:
-            quit = true;
-            break;
-        case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_ESCAPE)
-            {
-                quit = true;
-            }
-        }
+		engine->Get<MAC::Renderer>()->EndFrame();
+	}
 
-        SDL_PumpEvents();
-
-        time += 0.0001f;
-        glUniform1f(location, std::sin(time));
-        glUniform3fv(tintLocation, 1, &tint[0]);
-
-        glClearColor(0.85f, 0.85f, 0.85f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        SDL_GL_SwapWindow(window);
-    }
-    return 0;
+	return 0;
 }

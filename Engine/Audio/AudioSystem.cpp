@@ -44,7 +44,7 @@ namespace MAC
 		if (iter != sounds.end())
 		{
 			FMOD::Sound* sound = iter->second;
-			sound->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF );
+			sound->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
 			FMOD::Channel* channel;
 			fmodSystem->playSound(sound, 0, true, &channel);
 			channel->setVolume(volume);

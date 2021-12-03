@@ -1,7 +1,7 @@
 #include "Engine.h"
 
 namespace MAC {
-	
+
 	void Engine::Startup() {
 		systems.push_back(std::make_unique<AudioSystem>());
 		systems.push_back(std::make_unique<EventSystem>());
@@ -13,6 +13,11 @@ namespace MAC {
 
 		REGISTER_CLASS(Actor);
 		REGISTER_CLASS(AudioComponent);
+		REGISTER_CLASS(CameraComponent);
+		REGISTER_CLASS(FreeCameraController);
+		REGISTER_CLASS(MeshComponent);
+		REGISTER_CLASS(ModelComponent);
+		REGISTER_CLASS(LightComponent);
 	}
 
 	void Engine::Shutdown() {

@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files\Materials">
+      <UniqueIdentifier>{51f3edb7-ce16-43d7-ba8f-eeb9b53be051}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{4a57fbe9-527f-4a91-9dd7-afcb96eca5e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -21,5 +27,45 @@
     <ClCompile Include="..\ThirdParty\glad\src\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Build\Resources\Shaders\basic.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </Text>
+    <Text Include="..\Build\Resources\Shaders\basic.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Build\Resources\Materials\wood.mtl">
+      <Filter>Resource Files\Materials</Filter>
+    </None>
+    <None Include="..\Build\Resources\Shaders\gouraud.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Build\Resources\Shaders\gouraud.shdr">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Build\Resources\Shaders\gouraud.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Build\Resources\Shaders\flat.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Build\Resources\Shaders\flat.shdr">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Build\Resources\Shaders\flat.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Build\Resources\Shaders\phong.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Build\Resources\Shaders\phong.shdr">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="..\Build\Resources\Shaders\phong.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

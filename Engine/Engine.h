@@ -1,6 +1,7 @@
 #pragma once
 
 #define REGISTER_CLASS(CLASS) MAC::ObjectFactory::Instance().Register<CLASS>(#CLASS);
+#define CREATE_ENGINE_OBJECT(CLASS) MAC::ObjectFactory::Instance().Create<MAC::CLASS>(#CLASS);
 
 //Audio
 #include "Audio/AudioSystem.h"
@@ -27,6 +28,8 @@
 //Graphics
 #include "Graphics/Renderer.h"
 #include "Graphics/Texture.h"
+#include "Graphics/Material.h"
+#include "Graphics/VertexBuffer.h"
 
 //STD
 #include <vector>
@@ -47,6 +50,11 @@
 //Components
 #include "Component/PhysicsComponent.h"
 #include "Component/AudioComponent.h"
+#include "Component/CameraComponent.h"
+#include "Component/MeshComponent.h"
+#include "Component/ModelComponent.h"
+#include "Component/FreeCameraController.h"
+#include "Component/LightComponent.h"
 
 namespace MAC {
 	using ObjectFactory = Singleton<Factory<std::string, Object>>;
